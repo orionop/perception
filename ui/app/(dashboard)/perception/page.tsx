@@ -63,12 +63,19 @@ export default function PerceptionLabPage() {
     setIsRunning(true)
     setShowResults(false)
     setError(null)
-    setProgress(10)
+    setProgress(5)
+
+    // Simulate progress while waiting for actual inference
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) return 95
+        return prev + Math.random() * 5 + 2 // Increase by 2-7%
+      })
+    }, 600)
 
     try {
       const formData = new FormData()
       formData.append("image", inputFile)
-      setProgress(25)
 
       const res = await fetch(`${API_URL}/api/infer`, {
         method: "POST",
@@ -81,14 +88,21 @@ export default function PerceptionLabPage() {
       }
 
       const data = (await res.json()) as InferenceResult
+      clearInterval(progressInterval)
       setProgress(100)
-      setInferenceResult(data)
-      setShowResults(true)
-      setActiveStep("path")
+
+      // Slight delay to show 100% before revealing results
+      setTimeout(() => {
+        setInferenceResult(data)
+        setShowResults(true)
+        setActiveStep("path")
+        setIsRunning(false)
+      }, 500)
+
     } catch (e) {
+      clearInterval(progressInterval)
       setError(e instanceof Error ? e.message : "Pipeline failed")
       setShowResults(false)
-    } finally {
       setIsRunning(false)
     }
   }, [inputFile, inputImage])
