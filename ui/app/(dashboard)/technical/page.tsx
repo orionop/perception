@@ -17,7 +17,7 @@ const VERSIONS = [
     { name: "V4", arch: "V3 + Frequency Recalibration", miou: 45, pixel: 65.0, note: "Class rebalancing (+29%)" },
     { name: "V5", arch: "V4 + Multi-scale + 1D Spatial Prior", miou: 48, pixel: 70.0, note: "Spatial context (+7%)" },
     { name: "V6", arch: "DINOv2 + 3-block head + 4D Bayesian Fusion", miou: 52.1, pixel: 77.6, note: "Joint histogram fusion (+8.5%)" },
-    { name: "Ens.", arch: "V3 + V5 + V6 Ensemble + Prior", miou: 60.6, pixel: 81.2, note: "Highest benchmark result" },
+    { name: "Ens.", arch: "V3 + V5 + V6 Ensemble + Prior", miou: 61, pixel: 81.2, note: "Highest benchmark result" },
 ]
 
 // Per-class IoU from the FULL 1,002-image test set (hackathon_report.md)
@@ -64,7 +64,7 @@ export default function TechnicalPage() {
         <div className="space-y-8 max-w-6xl mx-auto pb-12">
             {/* Page header */}
             <div>
-                <h1 className="text-2xl font-bold text-foreground tracking-tight">Technical Evaluation</h1>
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">Command Center</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     Comprehensive analysis covering all evaluation criteria — Perception Engine v6
                 </p>
@@ -73,7 +73,7 @@ export default function TechnicalPage() {
             {/* Quick stats strip — all verified */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                    { label: "Highest mIoU", value: "60.6%", icon: Target, color: "text-emerald-400" },
+                    { label: "Highest mIoU", value: "61%", icon: Target, color: "text-emerald-400" },
                     { label: "Pixel Accuracy", value: "81.2%", icon: CheckCircle2, color: "text-emerald-400" },
                     { label: "Test Images", value: "1,002", icon: Layers, color: "text-amber-400" },
                     { label: "Classes Evaluated", value: "10 / 10", icon: Shield, color: "text-emerald-400" },
@@ -360,7 +360,7 @@ export default function TechnicalPage() {
                                 </thead>
                                 <tbody>
                                     {[
-                                        { metric: "Mean IoU", values: ["16%", "17%", "35%", "52.1%", "60.6%"] },
+                                        { metric: "Mean IoU", values: ["16%", "17%", "35%", "52.1%", "61%"] },
                                         { metric: "Pixel Accuracy", values: ["~38%", "~40%", "~55%", "77.6%", "81.2%"] },
                                         { metric: "Backbone", values: ["ResNet34", "ResNet50", "DINOv2", "DINOv2", "Ensemble"] },
                                         { metric: "Key Innovation", values: ["Baseline", "Depth", "SSL", "Bayesian", "Fusion"] },

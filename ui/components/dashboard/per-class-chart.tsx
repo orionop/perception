@@ -20,12 +20,17 @@ export function PerClassChart({
   const report = reportProp ?? getPrimaryReport()
   const classes = getTerrainClasses()
 
-  const chartData = classes.map((tc) => ({
+  const allData = classes.map((tc) => ({
     name: tc.name,
     iou: report.metrics.per_class_iou[tc.key] ?? 0,
     color: tc.color,
     isNull: report.metrics.per_class_iou[tc.key] === null,
   }))
+
+  const chartData = allData
+    .filter((d) => !d.isNull && d.iou > 0)
+    .sort((a, b) => b.iou - a.iou)
+    .slice(0, 5)
 
   if (compact) {
     return (

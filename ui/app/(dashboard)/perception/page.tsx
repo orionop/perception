@@ -12,7 +12,6 @@ const API_URL = process.env.NEXT_PUBLIC_PERCEPTION_API_URL || "http://localhost:
 const PIPELINE_STEPS = [
   { key: "raw", label: "Raw Terrain", icon: Eye, desc: "Input terrain image" },
   { key: "segmented", label: "Segmentation", icon: Map, desc: "Semantic class overlay" },
-  { key: "costmap", label: "Cost Map", icon: Route, desc: "Traversability grid" },
   { key: "path", label: "Safe Path", icon: Shield, desc: "Planned navigation path" },
 ] as const
 
@@ -120,9 +119,6 @@ export default function PerceptionLabPage() {
     segmented: inferenceResult?.segmentation
       ? `data:image/png;base64,${inferenceResult.segmentation}`
       : asset.maskOverlay,
-    costmap: inferenceResult?.costmap
-      ? `data:image/png;base64,${inferenceResult.costmap}`
-      : asset.pathOverlay,
     path: inferenceResult?.path
       ? `data:image/png;base64,${inferenceResult.path}`
       : asset.pathOverlay,
@@ -298,26 +294,7 @@ export default function PerceptionLabPage() {
               </div>
             )}
 
-            {/* Cost Mapping */}
-            {activeStep === "costmap" && (
-              <div className="hud-panel rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide mb-4">Cost Mapping</h3>
-                <div className="space-y-3">
-                  {[
-                    { label: "Traversable", value: "1.0", color: "#10B981" },
-                    { label: "Soft Obstacle", value: "3.0", color: "#F59E0B" },
-                    { label: "Obstacle", value: "10.0", color: "#EF4444" },
-                    { label: "Ignored", value: "5.0", color: "#6B7280" },
-                  ].map((r) => (
-                    <div key={r.label} className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: r.color }} />
-                      <span className="text-sm text-foreground flex-1">{r.label}</span>
-                      <span className="text-sm font-mono text-amber-400">{r.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
 
             {/* Key metrics */}
             {showResults && (

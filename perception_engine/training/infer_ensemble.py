@@ -648,6 +648,10 @@ def main():
     cv2.imwrite(overlay_path, overlay)
     print(f"\n  Saved: {overlay_path}")
 
+    # Save raw class-index mask for API cost mapping / path planning
+    mask_path = os.path.join(args.output, f"ensemble_{basename}_mask.npy")
+    np.save(mask_path, pred_final.astype(np.uint8))
+
     # Also save raw ensemble (no post-processing) overlay for comparison
     overlay_raw = create_overlay(image_bgr, pred_mask)
     cv2.imwrite(os.path.join(args.output, f"ensemble_{basename}_raw_overlay.png"), overlay_raw)

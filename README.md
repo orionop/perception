@@ -3,7 +3,7 @@
 > **Duality AI Hackathon Submission** — Autonomous UGV terrain analysis using DINOv2 + 4D Bayesian Fusion
 
 <p align="center">
-  <img src="https://img.shields.io/badge/mIoU-60.6%25-brightgreen?style=for-the-badge" alt="mIoU">
+  <img src="https://img.shields.io/badge/mIoU-61%25-brightgreen?style=for-the-badge" alt="mIoU">
   <img src="https://img.shields.io/badge/Pixel_Accuracy-81.2%25-brightgreen?style=for-the-badge" alt="Accuracy">
   <img src="https://img.shields.io/badge/Classes-10-blue?style=for-the-badge" alt="Classes">
   <img src="https://img.shields.io/badge/Framework-PyTorch-orange?style=for-the-badge" alt="PyTorch">
@@ -19,7 +19,7 @@ A complete perception pipeline for **offroad semantic segmentation** of desert t
 
 | Metric | Value |
 |---|---|
-| **Highest mIoU** | **60.6%** (ensemble) |
+| **Highest mIoU** | **61%** (ensemble) |
 | **V6 Single-Model mIoU** | 52.11% |
 | **Pixel Accuracy** | 81.2% |
 | **Test Set** | 1,002 images (960×540) |
@@ -93,7 +93,7 @@ Our development followed a rigorous iterative process. Each version addressed a 
 | V4 | V3 + Freq. Recalibration | 45% | Class rebalancing (+29%) |
 | V5 | V4 + Multi-scale + 1D Prior | 48% | Spatial context (+7%) |
 | **V6** | **V5 + 4D Bayesian Fusion** | **52.1%** | **Joint histogram (+8.5%)** |
-| **Ensemble** | **V3+V5+V6 + Prior** | **60.6%** | **Multi-model fusion** |
+| **Ensemble** | **V3+V5+V6 + Prior** | **61%** | **Multi-model fusion** |
 
 ---
 
@@ -166,8 +166,8 @@ Download the trained weights and priors from Google Drive and place them in the 
 |---|---|---|
 | `best_model_v6.pth` | 200 MB | ✅ Essential |
 | `joint_histograms.pkl` | 2 MB | ✅ Essential |
-| `best_model_v3.pth` | 102 MB | For ensemble (60.6% mIoU) |
-| `best_model_v5.pth` | 146 MB | For ensemble (60.6% mIoU) |
+| `best_model_v3.pth` | 102 MB | For ensemble (61% mIoU) |
+| `best_model_v5.pth` | 146 MB | For ensemble (61% mIoU) |
 
 ### 3. Run Single-Image Inference (CLI)
 

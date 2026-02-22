@@ -158,46 +158,55 @@ def run_pipeline(
             logger.warning("Overlay not found: %s", overlay_path)
             result["error"] = "Overlay not generated"
 
-        # 6. Cost map — simple visualization from predicted mask
-        #    We generate the mask using a simple HSV heuristic (fast, no model load)
+        # 6. Load the ACTUAL predicted mask from ensemble output
         nparr = np.frombuffer(image_bytes, np.uint8)
         image_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         orig_h, orig_w = image_bgr.shape[:2]
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
 
-        # Build a simple mask from HSV for cost map
-        hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
-        H, S, V = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
-        y_norm = np.linspace(0, 1, orig_h).reshape(-1, 1) * np.ones((1, orig_w))
-
-        pred_mask = np.full((orig_h, orig_w), 8, dtype=np.uint8)  # landscape
-        pred_mask[(V > 180) & (S < 60) & (y_norm < 0.5)] = 9   # sky
-        pred_mask[(S > 60) & (H > 30) & (H < 90)] = 0           # tree/vegetation
-        pred_mask[(S > 40) & (H > 10) & (H < 30)] = 4           # ground
-        pred_mask[(S < 40) & (V < 120) & (y_norm > 0.5)] = 7    # rock
+        mask_npy_path = output_dir / f"ensemble_{img_basename}_mask.npy"
+        if mask_npy_path.exists():
+            pred_mask = np.load(str(mask_npy_path))
+            logger.info("Loaded actual model prediction mask from %s", mask_npy_path)
+        else:
+            # Fallback: simple HSV heuristic (should rarely happen)
+            logger.warning("Mask .npy not found, using HSV fallback")
+            hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+            H, S, V = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
+            y_norm = np.linspace(0, 1, orig_h).reshape(-1, 1) * np.ones((1, orig_w))
+            pred_mask = np.full((orig_h, orig_w), 8, dtype=np.uint8)
+            pred_mask[(V > 180) & (S < 60) & (y_norm < 0.5)] = 9
+            pred_mask[(S > 60) & (H > 30) & (H < 90)] = 0
+            pred_mask[(S > 40) & (H > 10) & (H < 30)] = 4
+            pred_mask[(S < 40) & (V < 120) & (y_norm > 0.5)] = 7
 
         from perception_engine.navigation.cost_mapping import build_cost_map
         cost_map = build_cost_map(pred_mask, COST_MAPPING, COST_VALUES)
 
         # Cost map visualization
         vis = np.zeros((orig_h, orig_w, 3), dtype=np.uint8)
-        vis[cost_map <= 1.0] = (16, 185, 129)     # green
-        vis[(cost_map > 1.0) & (cost_map <= 5.0)] = (59, 130, 246)   # blue
-        vis[(cost_map > 5.0) & (cost_map <= 50.0)] = (107, 114, 128) # gray
-        vis[cost_map > 50.0] = (239, 68, 68)       # red
+        vis[cost_map <= 1.0] = (16, 185, 129)     # green = traversable
+        vis[(cost_map > 1.0) & (cost_map <= 5.0)] = (59, 130, 246)   # blue = soft
+        vis[(cost_map > 5.0) & (cost_map <= 50.0)] = (107, 114, 128) # gray = ignored
+        vis[cost_map > 50.0] = (239, 68, 68)       # red = obstacle
 
-        # Save cost map to temp file, then read as raw bytes
         costmap_path = output_dir / f"costmap_{img_basename}.png"
         cv2.imwrite(str(costmap_path), vis)
         result["costmap"] = _read_file_as_base64(costmap_path)
 
-        # 7. Path planning
+        # 7. Path planning using A* on the ACTUAL cost map
         from perception_engine.navigation.planner import AStarPlanner
-        planner = AStarPlanner(allow_diagonal=False)
-        start = (orig_h - 50, 30)
-        goal = (orig_h - 50, orig_w - 30)
+        planner = AStarPlanner(allow_diagonal=True)
 
-        path_overlay = image_bgr.copy()
+        # Start from bottom-center, goal at top-center (traverse the scene)
+        start = (orig_h - 20, orig_w // 2)
+        goal = (50, orig_w // 2)
+
+        # Use the segmentation overlay as the base for path drawing
+        if overlay_path.exists():
+            path_overlay = cv2.imread(str(overlay_path))
+        else:
+            path_overlay = image_bgr.copy()
+
         try:
             nav_result = planner.plan(cost_map, start, goal)
             result["path_found"] = nav_result.path_found
@@ -205,11 +214,17 @@ def run_pipeline(
             result["path_length"] = len(nav_result.path) if nav_result.path else 0
             if nav_result.path and len(nav_result.path) > 1:
                 pts = np.array([(c, r) for r, c in nav_result.path], dtype=np.int32)
+                # Draw path with thick green line + thin white center for visibility
+                cv2.polylines(path_overlay, [pts], isClosed=False, color=(0, 0, 0), thickness=5)
                 cv2.polylines(path_overlay, [pts], isClosed=False, color=(0, 255, 0), thickness=3)
+                # Draw start/goal markers
+                cv2.circle(path_overlay, (start[1], start[0]), 10, (0, 255, 0), -1)
+                cv2.circle(path_overlay, (start[1], start[0]), 12, (255, 255, 255), 2)
+                cv2.circle(path_overlay, (goal[1], goal[0]), 10, (0, 0, 255), -1)
+                cv2.circle(path_overlay, (goal[1], goal[0]), 12, (255, 255, 255), 2)
         except Exception as path_err:
             logger.warning("Path planning failed: %s", path_err)
 
-        # Save path overlay to temp file, then read as raw bytes
         path_path = output_dir / f"path_{img_basename}.png"
         cv2.imwrite(str(path_path), path_overlay)
         result["path"] = _read_file_as_base64(path_path)

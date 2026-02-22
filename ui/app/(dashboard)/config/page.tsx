@@ -161,7 +161,7 @@ export default function ConfigPage() {
   const [saved, setSaved] = useState(false)
   const [yamlOpen, setYamlOpen] = useState(false)
   const [config, setConfig] = useState<ConfigState>({
-    model: { name: "deeplabv3plus_trained", architecture: "deeplabv3plus", backbone: "resnet34", num_classes: 10, encoder_weights: "imagenet", weights: "perception_engine/best_model.pth" },
+    model: { name: "dinov2_v6_ensemble", architecture: "dinov2_vit_s14", backbone: "vit_small_14", num_classes: 10, encoder_weights: "self-supervised", weights: "best_model_v6.pth" },
     cost_mapping: { traversable: [8, 2, 4, 5], obstacle: [0, 7, 6], soft: [1, 3], ignored: [9] },
     cost_values: { traversable: 1.0, soft: 2.0 },
     planner: {
@@ -170,7 +170,7 @@ export default function ConfigPage() {
       rrt_star: { max_iterations: 5000, step_size: 5, goal_bias: 0.1, rewire_radius: 15 },
     },
     safety: { weight_obstacle: 0.4, weight_confidence: 0.3, weight_cost: 0.3, max_acceptable_cost: 1000.0 },
-    preprocessing: { target_size: [288, 512], mean: [0.485, 0.456, 0.406], std: [0.229, 0.224, 0.225] },
+    preprocessing: { target_size: [540, 960], mean: [0.485, 0.456, 0.406], std: [0.229, 0.224, 0.225] },
     robustness: {
       enabled: true,
       brightness: { enabled: true, factor: 1.4 },
@@ -212,7 +212,7 @@ export default function ConfigPage() {
             <Select value={config.model.architecture} onValueChange={(v) => updateConfig("model", { ...config.model, architecture: v })}>
               <SelectTrigger className="bg-input border-border text-foreground h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-card border-border">
-                {["deeplabv3plus", "unet", "fpn", "pspnet", "manet"].map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                {["dinov2_vit_s14", "deeplabv3plus", "unet", "fpn", "pspnet"].map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -221,7 +221,7 @@ export default function ConfigPage() {
             <Select value={config.model.backbone} onValueChange={(v) => updateConfig("model", { ...config.model, backbone: v })}>
               <SelectTrigger className="bg-input border-border text-foreground h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-card border-border">
-                {["resnet34", "resnet50", "resnet101", "efficientnet-b4", "mobilenet_v2"].map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                {["vit_small_14", "resnet34", "resnet50", "resnet101", "efficientnet-b4"].map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -230,7 +230,7 @@ export default function ConfigPage() {
             <Select value={config.model.encoder_weights} onValueChange={(v) => updateConfig("model", { ...config.model, encoder_weights: v })}>
               <SelectTrigger className="bg-input border-border text-foreground h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-card border-border">
-                {["imagenet", "noisy-student", "advprop"].map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                {["self-supervised", "imagenet", "noisy-student", "advprop"].map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  Monitor,
   ScanSearch,
   Swords,
   Navigation,
@@ -17,12 +16,9 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 
 const navItems = [
-  { label: "Command Center", href: "/", icon: Monitor },
+  { label: "Command Center", href: "/technical", icon: FlaskConical },
   { label: "Perception Lab", href: "/perception", icon: ScanSearch },
-  { label: "Technical", href: "/technical", icon: FlaskConical },
-  { label: "Terrain Sim", href: "/simulator", icon: Navigation },
   { label: "Model Arena", href: "/arena", icon: Swords },
-  { label: "Configuration", href: "/config", icon: Settings },
 ]
 
 export function AppSidebar() {

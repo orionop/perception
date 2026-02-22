@@ -22,13 +22,35 @@ function generatePath(
   const path: [number, number][] = []
   const [sr, sc] = start
   const [gr, gc] = goal
-  const steps = Math.max(Math.abs(gr - sr), Math.abs(gc - sc), 100)
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps
-    const row = Math.round(sr + (gr - sr) * t + Math.sin(t * Math.PI * 3) * 8)
-    const col = Math.round(sc + (gc - sc) * t + Math.cos(t * Math.PI * 2) * 5)
-    path.push([row, col])
+  const maxR = 540
+  const maxC = 960
+
+  // Clamp coords to canvas
+  const clamp = (r: number, c: number): [number, number] => [
+    Math.max(0, Math.min(maxR - 1, Math.round(r))),
+    Math.max(0, Math.min(maxC - 1, Math.round(c))),
+  ]
+
+  // Move column-first (horizontal), then row (vertical) — like A* on a grid
+  const dr = gr - sr
+  const dc = gc - sc
+  const totalSteps = Math.abs(dr) + Math.abs(dc)
+  if (totalSteps === 0) return [clamp(sr, sc)]
+
+  // Horizontal leg
+  const colStep = dc === 0 ? 0 : dc > 0 ? 1 : -1
+  let r = sr, c = sc
+  for (let i = 0; i < Math.abs(dc); i++) {
+    path.push(clamp(r, c))
+    c += colStep
   }
+  // Vertical leg
+  const rowStep = dr === 0 ? 0 : dr > 0 ? 1 : -1
+  for (let i = 0; i < Math.abs(dr); i++) {
+    path.push(clamp(r, c))
+    r += rowStep
+  }
+  path.push(clamp(gr, gc))
   return path
 }
 
@@ -189,9 +211,9 @@ export default function SimulatorPage() {
   const interpPos: [number, number] | null =
     currentPt && nextPt
       ? [
-          currentPt[0] + (nextPt[0] - currentPt[0]) * frac,
-          currentPt[1] + (nextPt[1] - currentPt[1]) * frac,
-        ]
+        currentPt[0] + (nextPt[0] - currentPt[0]) * frac,
+        currentPt[1] + (nextPt[1] - currentPt[1]) * frac,
+      ]
       : pathPoints.length > 0
         ? pathPoints[pathPoints.length - 1]
         : null
@@ -434,7 +456,7 @@ export default function SimulatorPage() {
                 "text-2xl font-mono font-bold mt-1",
                 safetySeverity === "robust" ? "text-emerald-400"
                   : safetySeverity === "moderate" ? "text-amber-400"
-                  : "text-red-400"
+                    : "text-red-400"
               )}>
                 {(safetyScore * 100).toFixed(1)}%
               </div>
@@ -442,13 +464,13 @@ export default function SimulatorPage() {
                 "inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md mt-2 self-start",
                 safetySeverity === "robust" ? "text-emerald-400 bg-emerald-400/10"
                   : safetySeverity === "moderate" ? "text-amber-400 bg-amber-400/10"
-                  : "text-red-400 bg-red-400/10"
+                    : "text-red-400 bg-red-400/10"
               )}>
                 {safetySeverity === "robust"
                   ? <><ShieldCheck className="w-3 h-3" />Safe</>
                   : safetySeverity === "moderate"
-                  ? <><ShieldAlert className="w-3 h-3" />Moderate</>
-                  : <><TrendingDown className="w-3 h-3" />Risky</>}
+                    ? <><ShieldAlert className="w-3 h-3" />Moderate</>
+                    : <><TrendingDown className="w-3 h-3" />Risky</>}
               </span>
             </div>
           </div>
