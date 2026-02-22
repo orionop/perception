@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from perception_engine.data_types import SegmentationOutput
+from perception_engine.core.data_types import SegmentationOutput
 
 
 def postprocess_logits(

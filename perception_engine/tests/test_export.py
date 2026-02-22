@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from perception_engine.data_types import (
+from perception_engine.core.data_types import (
     BenchmarkReport,
     NavigationResult,
     SafetyReport,

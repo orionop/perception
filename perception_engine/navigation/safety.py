@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from perception_engine.data_types import NavigationResult, SafetyReport
+from perception_engine.core.data_types import NavigationResult, SafetyReport
 
 logger = logging.getLogger(__name__)
 

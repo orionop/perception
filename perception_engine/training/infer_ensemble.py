@@ -459,9 +459,9 @@ def main():
     parser = argparse.ArgumentParser(description="Ensemble V3+V5+V6 + TTA + Post-Processing")
     parser.add_argument("--image", required=True)
     parser.add_argument("--gt", default=None)
-    parser.add_argument("--v3-weights", default="best_model_v3.pth")
-    parser.add_argument("--v5-weights", default="best_model_v5.pth")
-    parser.add_argument("--v6-weights", default="best_model_v6.pth")
+    parser.add_argument("--v3-weights", default="weights/best_model_v3.pth")
+    parser.add_argument("--v5-weights", default="weights/best_model_v5.pth")
+    parser.add_argument("--v6-weights", default="weights/best_model_v6.pth")
     parser.add_argument("--output", default="outputs")
     parser.add_argument("--no-tta", action="store_true", help="Skip TTA")
     parser.add_argument("--no-postprocess", action="store_true", help="Skip post-processing")
@@ -556,9 +556,9 @@ def main():
     print("\n=== Bayesian Prior Injection ===")
     probs_injected = ensemble_probs.squeeze().numpy()  # (C, H, W)
 
-    joint_path = os.path.join(os.path.dirname(args.image), "..", "joint_histograms.pkl")
+    joint_path = os.path.join(os.path.dirname(os.path.abspath(args.image)), "..", "..", "..", "weights", "joint_histograms.pkl")
     if not os.path.exists(joint_path):
-        joint_path = "joint_histograms.pkl"
+        joint_path = "weights/joint_histograms.pkl"
 
     if os.path.exists(joint_path):
         import pickle

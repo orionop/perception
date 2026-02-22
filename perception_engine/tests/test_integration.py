@@ -6,7 +6,7 @@ into the next module in the pipeline, using synthetic data.
 
 import numpy as np
 
-from perception_engine.data_types import NavigationResult
+from perception_engine.core.data_types import NavigationResult
 from perception_engine.engine.mask_remapping import remap_mask
 from perception_engine.evaluation.segmentation_metrics import (
     compute_segmentation_metrics,

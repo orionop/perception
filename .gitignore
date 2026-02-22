@@ -13,6 +13,7 @@ build/
 *.pt
 *.onnx
 *.zip
+weights/
 best_model_v6/
 
 # ─── Pickled Priors / Histograms ───
@@ -58,3 +59,4 @@ config_v2.yaml
 config_v3.yaml
 config_v5.yaml
 config_v6.yaml
+perception_engine/configs/config_v*.yaml

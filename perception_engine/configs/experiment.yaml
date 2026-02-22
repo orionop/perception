@@ -22,7 +22,7 @@ models:
     backbone: resnet50
     num_classes: 10
     encoder_weights: imagenet
-    weights: best_model_v3.pth
+    weights: weights/best_model_v3.pth
 
 # ---- Semantic class names ----
 # Ordered by contiguous model output index (0–9).

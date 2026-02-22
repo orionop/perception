@@ -161,7 +161,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True, help="Color image path")
     parser.add_argument("--gt", default=None, help="Ground truth mask path")
-    parser.add_argument("--weights", default="best_model_v5.pth")
+    parser.add_argument("--weights", default="weights/best_model_v5.pth")
     parser.add_argument("--output", default="outputs")
     args = parser.parse_args()
 

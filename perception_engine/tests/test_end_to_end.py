@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 import torch
 
-from perception_engine.config_loader import get_device, load_config
-from perception_engine.data_types import BenchmarkReport
+from perception_engine.configs.config_loader import get_device, load_config
+from perception_engine.core.data_types import BenchmarkReport
 from perception_engine.engine.inference_engine import InferenceEngine
 from perception_engine.engine.postprocessing import postprocess_logits
 from perception_engine.engine.preprocessing import preprocess_image

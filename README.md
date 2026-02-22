@@ -11,6 +11,22 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Training](#-training)
+- [Evaluation](#-evaluation)
+- [Interactive UI](#-interactive-ui)
+- [Scripts & Utilities](#-scripts--utilities)
+- [Development](#-development)
+- [Documentation](#-documentation)
+
+---
+
 ## 📋 Overview
 
 A complete perception pipeline for **offroad semantic segmentation** of desert terrain, designed for autonomous UGV (Unmanned Ground Vehicle) navigation. The system assigns one of 10 terrain classes to every pixel in an input image, generates traversability cost maps, and computes safe navigation paths.
@@ -100,43 +116,77 @@ Our development followed a rigorous iterative process. Each version addressed a 
 ## 📁 Project Structure
 
 ```
-Monospace/
+Perception/
 ├── perception_engine/                  # Core Python package
-│   ├── training/
-│   │   ├── train_dinov2_v6_kaggle.py   # V6 training script (Kaggle dual T4)
-│   │   ├── build_joint_histograms.py   # Extract 4D priors from training data
-│   │   ├── eval_batch.py               # Full 1,002-image evaluation
-│   │   ├── infer_ensemble.py           # Single-image ensemble inference + viz
-│   │   └── infer_dinov2.py             # Single-model inference
-│   ├── api/
-│   │   ├── server.py                   # FastAPI backend
-│   │   └── pipeline.py                 # Inference pipeline (calls infer_ensemble.py)
-│   ├── engine/
-│   │   ├── inference_engine.py         # Batch inference engine
-│   │   ├── mask_remapping.py           # Class ID mapping
-│   │   └── postprocessing.py           # CRF, morphological ops
-│   ├── evaluation/
-│   │   ├── segmentation_metrics.py     # mIoU, fwIoU, Dice
+│   ├── api/                            # FastAPI backend & inference pipeline
+│   │   ├── server.py                   # REST API server
+│   │   └── pipeline.py                 # Runs infer_ensemble.py, returns base64 outputs
+│   ├── configs/                        # Configuration management
+│   │   ├── config_loader.py            # YAML loading, validation, device resolution
+│   │   ├── experiment.yaml             # Main experiment config (models, costs, planner)
+│   │   └── config_v*.yaml              # Model-specific configs (v2, v3, v5, v6)
+│   ├── core/                           # Shared data structures
+│   │   └── data_types.py               # SegmentationOutput, BenchmarkReport, NavigationResult
+│   ├── engine/                         # Inference & preprocessing
+│   │   ├── inference_engine.py         # Batch inference orchestration
+│   │   ├── mask_remapping.py           # Raw mask values → class indices
+│   │   ├── postprocessing.py           # CRF, morphological ops
+│   │   └── preprocessing.py           # Image normalization, resizing
+│   ├── evaluation/                     # Metrics & benchmarking
+│   │   ├── segmentation_metrics.py     # mIoU, fwIoU, Dice, confusion matrix
 │   │   ├── calibration.py              # ECE, reliability diagrams
-│   │   ├── robustness.py               # Perturbation tests
-│   │   └── benchmarking.py             # Automated benchmark runner
-│   ├── models/
+│   │   ├── robustness.py               # Perturbation testing
+│   │   ├── benchmarking.py             # Multi-model benchmark runner
+│   │   ├── batch_runner.py             # Batch evaluation over dataset
+│   │   ├── export.py                   # JSON/CSV report export
+│   │   └── multiscale_robustness.py     # Scale-invariance evaluation
+│   ├── models/                         # Model registry & loading
 │   │   ├── base_model.py               # Abstract model interface
-│   │   └── registry.py                 # Model factory
-│   ├── navigation/
-│   │   ├── cost_mapping.py             # Traversability cost grid
+│   │   ├── registry.py                 # Model factory
+│   │   └── loaders.py                  # Weight loading utilities
+│   ├── navigation/                     # Path planning & safety
+│   │   ├── cost_mapping.py             # Segmentation → traversability cost grid
 │   │   ├── planner.py                  # A* path planning
 │   │   └── safety.py                   # Safety scoring
+│   ├── training/                       # Training & inference scripts
+│   │   ├── train_dinov2_v6_kaggle.py   # V6 training (Kaggle dual T4)
+│   │   ├── train_dinov2_v5_kaggle.py   # V5 training
+│   │   ├── train_v3_kaggle.py          # V3 training
+│   │   ├── build_joint_histograms.py   # Build 4D prior from training data
+│   │   ├── eval_batch.py               # Full 1,002-image evaluation
+│   │   ├── infer_ensemble.py           # Ensemble inference + viz (primary CLI)
+│   │   ├── infer_dinov2.py             # Single-model (V6) inference
+│   │   └── inference_v5.py             # V5 single-model inference
 │   ├── tests/                          # Unit & integration tests
-│   └── Offroad_Segmentation_testImages/# Test dataset
+│   ├── visualization/                  # Overlay, confidence maps
+│   │   └── overlays.py
+│   └── Offroad_Segmentation_testImages/# Test dataset (gitignored, ~1.1GB)
 │       ├── Color_Images/               # 1,002 RGB inputs (960×540)
 │       └── Segmentation/               # Ground truth masks
+├── weights/                            # Model weights & priors (gitignored)
+│   ├── best_model_v*.pth               # Trained checkpoints
+│   └── joint_histograms.pkl            # 4D Bayesian prior
+├── scripts/                            # Utility scripts
+│   ├── run_perception_api.sh           # Start API server (uvicorn)
+│   ├── test_pipeline.py                # Quick pipeline smoke test
+│   └── offroad_segmentation/           # Dataset utilities
+│       ├── test_segmentation.py        # Validation/evaluation script
+│       ├── visualize.py               # Colorize segmentation masks
+│       └── ENV_SETUP/                   # Windows env setup scripts
+├── docs/
+│   └── README_PERCEPTION_API.md        # API documentation
 ├── ui/                                 # Next.js frontend
 │   └── app/(dashboard)/
-│       ├── page.tsx                     # Command Center dashboard
-│       ├── perception/page.tsx          # Perception Lab (interactive inference)
-│       └── technical/page.tsx           # Technical evaluation page
-├── pyproject.toml                       # Python package config
+│       ├── page.tsx                     # Root → redirects to /technical
+│       ├── technical/page.tsx          # Command Center (evaluation dashboard)
+│       ├── perception/page.tsx         # Perception Lab (upload & infer)
+│       ├── arena/page.tsx              # Model Arena
+│       ├── inference/page.tsx          # Inference playground
+│       ├── comparison/page.tsx          # Model comparison
+│       ├── config/page.tsx             # Experiment config
+│       ├── simulator/page.tsx          # Simulator
+│       └── settings/page.tsx           # Settings
+├── pyproject.toml                      # Python package config
 └── README.md                            # This file
 ```
 
@@ -146,19 +196,25 @@ Monospace/
 
 ### Prerequisites
 
-- Python 3.10+
-- PyTorch 2.0+
-- Node.js 18+ (for UI)
+| Requirement | Version |
+|---|---|
+| **Python** | 3.9+ |
+| **PyTorch** | 1.12+ (2.0+ recommended) |
+| **Node.js** | 18+ (for UI) |
 
 ### 1. Install Python Dependencies
 
 ```bash
+# From project root
 pip install -e .
+
+# For API + UI: install optional API deps
+pip install ".[api]"
 ```
 
-### 2. Download Model Weights
+### 2. Download Model Weights & Priors
 
-Download the trained weights and priors from Google Drive and place them in the project root:
+Download from Google Drive and place in the **`weights/`** directory:
 
 📦 **[Download Models & Priors (Google Drive)](https://drive.google.com/drive/folders/1-Hr0p6j26F9GVr5ISqdxa32J5zSJXtHa?usp=sharing)**
 
@@ -169,43 +225,82 @@ Download the trained weights and priors from Google Drive and place them in the 
 | `best_model_v3.pth` | 102 MB | For ensemble (61% mIoU) |
 | `best_model_v5.pth` | 146 MB | For ensemble (61% mIoU) |
 
-### 3. Run Single-Image Inference (CLI)
+### 3. Download Test Dataset (Optional)
+
+For full evaluation, download the test images and place them in:
+- `perception_engine/Offroad_Segmentation_testImages/Color_Images/`
+- `perception_engine/Offroad_Segmentation_testImages/Segmentation/`
+
+### 4. Run Single-Image Inference (CLI)
 
 ```bash
 python perception_engine/training/infer_ensemble.py \
   --image perception_engine/Offroad_Segmentation_testImages/Color_Images/0000096.png \
   --gt perception_engine/Offroad_Segmentation_testImages/Segmentation/0000096.png \
-  --v6-weights best_model_v6.pth \
+  --v6-weights weights/best_model_v6.pth \
   --output outputs/
 ```
 
-This produces:
-- `ensemble_0000096_overlay.png` — Segmentation overlay on input image
-- `ensemble_0000096_comparison.png` — Side-by-side comparison with GT
-- Console output with **mIoU**, **per-class IoU**, and **pixel accuracy**
+**Outputs:**
+- `ensemble_0000096_overlay.png` — Segmentation overlay on input
+- `ensemble_0000096_comparison.png` — Side-by-side with ground truth
+- Console: mIoU, per-class IoU, pixel accuracy
 
-### 4. Run Full Test Set Evaluation
+### 5. Run Full Test Set Evaluation
 
 ```bash
 python perception_engine/training/eval_batch.py \
-  --weights best_model_v6.pth
+  --weights weights/best_model_v6.pth
 ```
 
-### 5. Run the Interactive UI
+### 6. Run the Interactive UI
 
 ```bash
 # Terminal 1: Backend API
-PERCEPTION_WEIGHTS=best_model_v6.pth \
-PERCEPTION_PRIOR=joint_histograms.pkl \
+PERCEPTION_WEIGHTS=weights/best_model_v6.pth \
+PERCEPTION_PRIOR=weights/joint_histograms.pkl \
 python -m uvicorn perception_engine.api.server:app --port 8000
+
+# Or use the convenience script:
+./scripts/run_perception_api.sh
 
 # Terminal 2: Frontend
 cd ui && npm install && npm run dev
 ```
 
-Then open `http://localhost:3000`:
-- **Perception Lab** → Upload image, run ensemble pipeline, view overlay + cost map + path
-- **Technical** → Full evaluation: version progression, per-class IoU, robustness, confusion matrix
+Open **http://localhost:3000**:
+- **Perception Lab** (`/perception`) → Upload image, run inference, view overlay + cost map + path
+- **Command Center** (`/technical`) → Full evaluation: version progression, per-class IoU, robustness, confusion matrix
+
+---
+
+## ⚙️ Configuration
+
+### Experiment Config (`perception_engine/configs/experiment.yaml`)
+
+The main config drives the evaluation pipeline:
+
+- **`models`** — List of model definitions (architecture, backbone, weights path)
+- **`class_names`** — 10 terrain classes (tree, lush_bush, dry_grass, …)
+- **`mask_value_mapping`** — Raw mask pixel values → contiguous indices
+- **`cost_mapping`** — Class IDs → traversable / obstacle / soft / ignored
+- **`planner`** — A* settings (start, goal, diagonal moves)
+- **`preprocessing`** — Resize, normalization
+- **`robustness`** — Perturbation tests (brightness, blur, noise)
+- **`output`** — Output directory, save visualizations
+
+### Model Configs (`perception_engine/configs/config_v*.yaml`)
+
+Model-specific configs (input size, token grid, preprocessing) are saved during training. Place `config_v5.yaml`, `config_v6.yaml` in `perception_engine/configs/` for single-model inference (e.g. `inference_v5.py`).
+
+### Config Loader
+
+```python
+from perception_engine.configs.config_loader import load_config, get_device
+
+config = load_config("perception_engine/configs/experiment.yaml")
+device = get_device(config)  # "cuda" | "mps" | "cpu"
+```
 
 ---
 
@@ -214,8 +309,8 @@ Then open `http://localhost:3000`:
 ### Training on Kaggle (Dual T4 GPUs)
 
 ```bash
-# Upload train_dinov2_v6_kaggle.py to Kaggle
-# Set GPU accelerator to T4 × 2
+# Upload train_dinov2_v6_kaggle.py to Kaggle Notebook
+# Set GPU accelerator: T4 × 2
 python train_dinov2_v6_kaggle.py
 ```
 
@@ -224,7 +319,7 @@ python train_dinov2_v6_kaggle.py
 - Optimizer: AdamW (lr=3e-4, weight_decay=0.01)
 - Scheduler: Cosine Annealing with warm restarts
 - Duration: 50 epochs
-- Backbone: Frozen (only 2.1M-param head is trained)
+- Backbone: Frozen (only ~2.1M-param head trained)
 
 ### Building the 4D Prior
 
@@ -233,60 +328,128 @@ python perception_engine/training/build_joint_histograms.py \
   --train-dir <path_to_training_data>
 ```
 
-This extracts `P(class | H, S, V, Y)` from the training images and saves it as `joint_histograms.pkl`.
+Extracts `P(class | H, S, V, Y)` from training images → `joint_histograms.pkl`.
 
 ---
 
 ## 🧪 Evaluation
 
-### Metrics Used
-- **Mean IoU (mIoU)**: Primary metric — average per-class Intersection over Union
-- **Pixel Accuracy**: Percentage of correctly classified pixels
-- **Per-Class IoU**: Individual class performance
-- **Confusion Matrix**: Pixel-level misclassification patterns
+### Metrics
+
+| Metric | Description |
+|---|---|
+| **mIoU** | Mean Intersection over Union (primary) |
+| **Pixel Accuracy** | % correctly classified pixels |
+| **Per-Class IoU** | IoU per terrain class |
+| **Confusion Matrix** | Pixel-level misclassification |
+
+### Benchmark Runner (Experiment Mode)
+
+```bash
+python -m perception_engine.run_experiment \
+  --config perception_engine/configs/experiment.yaml \
+  --image path/to/image.png \
+  --ground-truth path/to/gt.png
+```
+
+```bash
+# Batch mode (uses image_dir/gt_dir from config)
+python -m perception_engine.run_experiment \
+  --config perception_engine/configs/experiment.yaml \
+  --batch --max-samples 10
+```
 
 ### Top Confusion Pairs
 
-| Ground Truth → Prediction | Misclassified | % of Total | Root Cause |
-|---|---|---|---|
-| dry_grass → rock | 32.7M pixels | 6.29% | Identical HSV color profiles |
-| landscape → rock | 32.0M pixels | 6.16% | Color overlap + adjacent positions |
-| rock → landscape | 16.1M pixels | 3.10% | Reverse confusion at boundaries |
+| Ground Truth → Prediction | % of Total | Root Cause |
+|---|---|---|
+| dry_grass → rock | 6.29% | Identical HSV color profiles |
+| landscape → rock | 6.16% | Color overlap + adjacent positions |
+| rock → landscape | 3.10% | Reverse confusion at boundaries |
 
-### Edge Cases & Limitations
-- **Rock vs Landscape**: Share identical color — mitigated by spatial prior but breaks down in flat boulder fields
-- **Absent Classes**: `ground_clutter`, `flower`, `log` had zero training samples → zero predictions
-- **Sparse Classes**: `lush_bush` (15K pixels / 519M total) → insufficient data for learning
+### Limitations
 
----
-
-## 🛡️ Generalization Strategy
-
-Three layers ensure performance on unseen desert environments:
-
-1. **Domain-Invariant Features**: Frozen DINOv2 backbone learns structural features, not texture (17% → 35% mIoU)
-2. **4D Bayesian Prior**: Statistical color-position constraints from training data (sky=top, rocks=elevated) transfer across environments
-3. **Class Frequency Recalibration**: Boosts underrepresented obstacle classes (rock: 3.5×) to prevent dominant-class suppression
+- **Rock vs Landscape**: Share identical color; mitigated by spatial prior; breaks down in flat boulder fields
+- **Absent Classes**: `ground_clutter`, `flower`, `log` had zero training samples
+- **Sparse Classes**: `lush_bush` (15K pixels) → insufficient data
 
 ---
 
 ## 🖥️ Interactive UI
 
-The Next.js frontend provides:
+| Page | Route | Description |
+|---|---|---|
+| **Command Center** | `/technical` | Evaluation dashboard: version progression, per-class IoU, confusion matrix, robustness |
+| **Perception Lab** | `/perception` | Upload image → run ensemble inference → overlay, cost map, A* path |
+| **Model Arena** | `/arena` | Compare models side-by-side |
+| **Inference** | `/inference` | Inference playground |
+| **Comparison** | `/comparison` | Model comparison |
+| **Config** | `/config` | Experiment config viewer |
+| **Simulator** | `/simulator` | Simulator |
+| **Settings** | `/settings` | App settings |
 
-| Page | Function |
+The Perception Lab runs the **exact same** `infer_ensemble.py` CLI as a subprocess — UI output matches CLI output.
+
+---
+
+## 🛠️ Scripts & Utilities
+
+| Script | Purpose |
 |---|---|
-| **Command Center** | System overview dashboard |
-| **Perception Lab** | Upload image → run ensemble inference → view overlay, cost map, A* path |
-| **Technical** | Full evaluation: version progression, per-class IoU, confusion pairs, robustness |
+| `scripts/run_perception_api.sh` | Start API server (`uvicorn` on port 8000) |
+| `scripts/test_pipeline.py` | Smoke test: run pipeline on sample image |
+| `scripts/offroad_segmentation/test_segmentation.py` | Validation on test set |
+| `scripts/offroad_segmentation/visualize.py` | Colorize segmentation masks |
 
-The Perception Lab runs the **exact same** `infer_ensemble.py` CLI as a subprocess — the UI output is byte-for-byte identical to CLI output.
+**Quick pipeline test:**
+```bash
+python scripts/test_pipeline.py
+```
+
+---
+
+## 🛡️ Generalization Strategy
+
+1. **Domain-Invariant Features**: Frozen DINOv2 learns structure, not texture (17% → 35% mIoU)
+2. **4D Bayesian Prior**: Spatial constraints (sky=top, rocks=elevated) transfer across environments
+3. **Class Frequency Recalibration**: Boosts underrepresented obstacle classes (rock: 3.5×)
+
+---
+
+## 🧑‍💻 Development
+
+### Run Tests
+
+```bash
+# All tests
+pytest perception_engine/tests/ -v
+
+# With coverage
+pytest perception_engine/tests/ -v --cov=perception_engine
+
+# Skip e2e/integration (require weights)
+pytest perception_engine/tests/ -v --ignore=perception_engine/tests/test_end_to_end.py --ignore=perception_engine/tests/test_integration.py
+```
+
+### Project Layout
+
+- **`perception_engine/core/`** — Data types used across the pipeline
+- **`perception_engine/configs/`** — Config loading & model configs
+- **`perception_engine/api/`** — FastAPI server; pipeline wraps `infer_ensemble.py`
+- **`perception_engine/evaluation/`** — Metrics, benchmarking, export
+- **`perception_engine/training/`** — Training scripts (Kaggle) and inference CLI scripts
+
+---
+
+## 📚 Documentation
+
+- **[API Documentation](docs/README_PERCEPTION_API.md)** — FastAPI setup, endpoints, environment variables
 
 ---
 
 ## 📄 License
 
-This project was developed for the SPIT Hackathon.
+This project was developed for the Duality AI Hackathon. MIT License.
 
 ---
 

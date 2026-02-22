@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from perception_engine.data_types import BenchmarkReport
+from perception_engine.core.data_types import BenchmarkReport
 from perception_engine.engine.mask_remapping import (
     build_mapping_from_config,
     remap_mask,

@@ -14,7 +14,7 @@ from typing import Any, Callable, Dict, List, Optional
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter
 
-from perception_engine.data_types import SegmentationOutput
+from perception_engine.core.data_types import SegmentationOutput
 from perception_engine.engine.inference_engine import InferenceEngine
 from perception_engine.evaluation.segmentation_metrics import (
     compute_segmentation_metrics,

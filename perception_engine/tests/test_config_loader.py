@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from perception_engine.config_loader import (
+from perception_engine.configs.config_loader import (
     ConfigValidationError,
     get_device,
     load_config,

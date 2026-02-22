@@ -158,7 +158,7 @@ class DiceCELoss(nn.Module):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--v6-weights", default="best_model_v6.pth")
+    parser.add_argument("--v6-weights", default="weights/best_model_v6.pth")
     parser.add_argument("--test-dir", default="perception_engine/Offroad_Segmentation_testImages")
     parser.add_argument("--epochs", type=int, default=12)
     parser.add_argument("--lr", type=float, default=5e-5)

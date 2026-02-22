@@ -10,14 +10,14 @@ The Perception Lab in the UI runs real inference via a FastAPI backend that uses
    # Or: pip install fastapi uvicorn python-multipart
    ```
 
-2. **Add model weights and prior** (place in `perception_engine/` or set env vars):
-   - `best_model_v6.pth` — DINOv2 + ConvNeXt segmentation weights
-   - `joint_histograms.pkl` — 4D Bayesian prior (optional)
+2. **Add model weights and prior** (place in `weights/` directory or set env vars):
+   - `weights/best_model_v6.pth` — DINOv2 + ConvNeXt segmentation weights
+   - `weights/joint_histograms.pkl` — 4D Bayesian prior (optional)
    
-   Or set environment variables:
+   Or set environment variables when starting the server:
    ```bash
-   export PERCEPTION_WEIGHTS=/path/to/best_model_v6.pth
-   export PERCEPTION_PRIOR=/path/to/joint_histograms.pkl
+   export PERCEPTION_WEIGHTS=weights/best_model_v6.pth
+   export PERCEPTION_PRIOR=weights/joint_histograms.pkl
    ```
 
 3. **Run the API server:**

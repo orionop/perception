@@ -15,7 +15,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from perception_engine.data_types import SegmentationOutput
+from perception_engine.core.data_types import SegmentationOutput
 from perception_engine.engine.postprocessing import postprocess_logits
 from perception_engine.engine.preprocessing import preprocess_from_config
 from perception_engine.models.base_model import BaseModel

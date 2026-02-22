@@ -11,11 +11,14 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 # ---- CONFIG ----
-CHECKPOINT = os.path.join(os.path.dirname(__file__), "..", "best_model_v5.pth")
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config_v5.yaml")
-TEST_IMG_DIR = os.path.join(os.path.dirname(__file__), "Offroad_Segmentation_testImages", "Color_Images")
-TEST_MASK_DIR = os.path.join(os.path.dirname(__file__), "Offroad_Segmentation_testImages", "Segmentation")
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "v5_predictions")
+# Paths relative to project root (parent of perception_engine)
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "..", ".."))
+CHECKPOINT = os.path.join(_PROJECT_ROOT, "weights", "best_model_v5.pth")
+CONFIG_PATH = os.path.join(_PROJECT_ROOT, "perception_engine", "configs", "config_v5.yaml")
+TEST_IMG_DIR = os.path.join(_PROJECT_ROOT, "perception_engine", "Offroad_Segmentation_testImages", "Color_Images")
+TEST_MASK_DIR = os.path.join(_PROJECT_ROOT, "perception_engine", "Offroad_Segmentation_testImages", "Segmentation")
+OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "outputs", "v5_predictions")
 
 with open(CONFIG_PATH) as f:
     config = yaml.safe_load(f)
@@ -107,7 +110,7 @@ if "backbone_blocks" in ckpt:
     print(f"  Loaded {loaded} fine-tuned backbone blocks")
 if "backbone_norm" in ckpt:
     backbone.norm.load_state_dict(ckpt["backbone_norm"])
-    print(f"  Loaded backbone norm")
+    print("  Loaded backbone norm")
 
 print(f"  Checkpoint mIoU: {ckpt.get('miou', '?'):.4f}, epoch: {ckpt.get('epoch', '?')}")
 

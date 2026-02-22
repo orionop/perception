@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from perception_engine.data_types import SegmentationOutput
+from perception_engine.core.data_types import SegmentationOutput
 from perception_engine.engine.inference_engine import InferenceEngine
 from perception_engine.evaluation.robustness import PERTURBATION_REGISTRY
 from perception_engine.evaluation.segmentation_metrics import (

@@ -27,7 +27,7 @@ from typing import Optional
 import numpy as np
 from PIL import Image
 
-from perception_engine.config_loader import get_device, load_config
+from perception_engine.configs.config_loader import get_device, load_config
 from perception_engine.engine.mask_remapping import (
     build_mapping_from_config,
     remap_mask,

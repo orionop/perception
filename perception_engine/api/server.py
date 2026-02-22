@@ -34,11 +34,11 @@ app.add_middleware(
 
 WEIGHTS_PATH = os.environ.get(
     "PERCEPTION_WEIGHTS",
-    os.path.join(os.path.dirname(__file__), "..", "best_model_v6.pth"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "weights", "best_model_v6.pth"),
 )
 PRIOR_PATH = os.environ.get(
     "PERCEPTION_PRIOR",
-    os.path.join(os.path.dirname(__file__), "..", "joint_histograms.pkl"),
+    os.path.join(os.path.dirname(__file__), "..", "..", "weights", "joint_histograms.pkl"),
 )
 
 

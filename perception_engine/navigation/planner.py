@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from perception_engine.data_types import NavigationResult
+from perception_engine.core.data_types import NavigationResult
 
 logger = logging.getLogger(__name__)
 

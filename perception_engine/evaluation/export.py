@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from perception_engine.data_types import BenchmarkReport
+from perception_engine.core.data_types import BenchmarkReport
 
 logger = logging.getLogger(__name__)
 
