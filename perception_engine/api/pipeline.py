@@ -193,17 +193,32 @@ def run_pipeline(
         cv2.imwrite(str(costmap_path), vis)
         result["costmap"] = _read_file_as_base64(costmap_path)
 
-        # 7. Path planning using A* on the ACTUAL cost map
+        # 7. Path planning using A* to strictly trace the landscape centerline
+        # Convert landscape class (8) to a binary mask, run Distance Transform
+        landscape_mask = (pred_mask == 8).astype(np.uint8)
+        dist = cv2.distanceTransform(landscape_mask, cv2.DIST_L2, 5)
+        
+        # We want the highest distance from edge to have the LOWEST cost
+        max_d = dist.max()
+        if max_d > 0:
+            norm_dist = 1.0 - (dist / max_d) # Center = 0.0, Edge = 1.0
+        else:
+            norm_dist = np.zeros_like(dist)
+            
+        # Force the path to stay inside the landscape by heavily penalizing everything else
+        planner_cost_map = np.full_like(pred_mask, fill_value=5000.0, dtype=np.float32)
+        planner_cost_map[landscape_mask == 1] = 1.0 + (norm_dist[landscape_mask == 1] * 100.0)
+
         from perception_engine.navigation.planner import AStarPlanner
         planner = AStarPlanner(allow_diagonal=True)
 
-        # Start point: lowest cost in the bottom region (preferring center)
-        bottom_region = cost_map[orig_h - 40:orig_h - 10, :].astype(np.float32).copy()
-        top_region = cost_map[20:60, :].astype(np.float32).copy()
+        # Start point: lowest cost in the bottom region (preferring center of landscape)
+        bottom_region = planner_cost_map[orig_h - 40:orig_h - 10, :].copy()
+        top_region = planner_cost_map[20:60, :].copy()
         
         center_c = orig_w // 2
         for c in range(orig_w):
-            penalty = abs(c - center_c) * 0.001
+            penalty = abs(c - center_c) * 0.1
             bottom_region[:, c] += penalty
             top_region[:, c] += penalty
             
@@ -220,7 +235,7 @@ def run_pipeline(
             path_overlay = image_bgr.copy()
 
         try:
-            nav_result = planner.plan(cost_map, start, goal)
+            nav_result = planner.plan(planner_cost_map, start, goal)
             result["path_found"] = nav_result.path_found
             result["path_cost"] = float(nav_result.path_cost) if np.isfinite(nav_result.path_cost) else 0.0
             result["path_length"] = len(nav_result.path) if nav_result.path else 0
