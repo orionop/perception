@@ -158,10 +158,16 @@ pip install -e .
 
 ### 2. Download Model Weights
 
-Download the trained weights and place them in the project root:
+Download the trained weights and priors from Google Drive and place them in the project root:
 
-- `best_model_v6.pth` — V6 model checkpoint (~200MB)
-- `joint_histograms.pkl` — 4D Bayesian prior (~2MB)
+📦 **[Download Models & Priors (Google Drive)](https://drive.google.com/drive/folders/1-Hr0p6j26F9GVr5ISqdxa32J5zSJXtHa?usp=sharing)**
+
+| File | Size | Required |
+|---|---|---|
+| `best_model_v6.pth` | 200 MB | ✅ Essential |
+| `joint_histograms.pkl` | 2 MB | ✅ Essential |
+| `best_model_v3.pth` | 102 MB | For ensemble (60.6% mIoU) |
+| `best_model_v5.pth` | 146 MB | For ensemble (60.6% mIoU) |
 
 ### 3. Run Single-Image Inference (CLI)
 
