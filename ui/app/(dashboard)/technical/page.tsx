@@ -401,7 +401,7 @@ export default function TechnicalPage() {
                                     { stage: "1. Prediction Overlay", desc: "Color-coded segmentation mask overlaid on input image" },
                                     { stage: "2. Side-by-Side Comparison", desc: "Original vs predicted vs ground truth (when available)" },
                                     { stage: "3. Cost Map", desc: "Traversability grid: green (safe) → red (obstacle)" },
-                                    { stage: "4. A* Safe Path", desc: "Optimal path avoiding obstacles" },
+                                    { stage: "4. Drivable Free-Space Corridor", desc: "Optimal connected safe zone mapped to UGV bounding box" },
                                 ].map((s) => (
                                     <div key={s.stage} className="flex items-start gap-3">
                                         <Zap className="w-4 h-4 text-pink-400 shrink-0 mt-0.5" />

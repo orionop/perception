@@ -12,7 +12,7 @@ const API_URL = process.env.NEXT_PUBLIC_PERCEPTION_API_URL || "http://localhost:
 const PIPELINE_STEPS = [
   { key: "raw", label: "Raw Terrain", icon: Eye, desc: "Input terrain image" },
   { key: "segmented", label: "Segmentation", icon: Map, desc: "Semantic class overlay" },
-  { key: "path", label: "Safe Path", icon: Shield, desc: "Planned navigation path" },
+  { key: "path", label: "Free Space", icon: Shield, desc: "Drivable terrain corridor" },
 ] as const
 
 type StepKey = (typeof PIPELINE_STEPS)[number]["key"]
@@ -147,7 +147,7 @@ export default function PerceptionLabPage() {
             Perception Lab
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Full perception pipeline — from raw terrain to safe navigation path
+            Full perception pipeline — from raw terrain to drivable free space
           </p>
         </div>
         {showResults && inferenceResult && (
@@ -335,7 +335,7 @@ export default function PerceptionLabPage() {
                 )}
                 <div className="hud-panel rounded-xl p-4 flex items-center justify-between">
                   <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Path Found</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Corridor Found</div>
                     <div className={cn(
                       "text-xl font-mono font-bold mt-1",
                       pathFound ? "text-emerald-400" : "text-red-400"
@@ -379,7 +379,7 @@ export default function PerceptionLabPage() {
               </div>
             )}
 
-            {/* Path Report — collapsible */}
+            {/* Corridor Report — collapsible */}
             {activeStep === "path" && showResults && (
               <div className="hud-panel rounded-xl overflow-hidden">
                 <button
@@ -389,13 +389,13 @@ export default function PerceptionLabPage() {
                   {pathReportOpen
                     ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                     : <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />}
-                  <span className="text-sm font-medium text-foreground">Path Report</span>
+                  <span className="text-sm font-medium text-foreground">Free Space Report</span>
                 </button>
                 {pathReportOpen && (
                   <div className="px-4 pb-4 space-y-3">
                     {[
-                      { l: "Path Cost", v: pathCost.toFixed(0) },
-                      { l: "Path Length", v: `${pathLength} steps` },
+                      { l: "Terrain Complexity", v: pathCost.toFixed(0) },
+                      { l: "Corridor Area", v: `${pathLength} pixels` },
                       { l: "Obstacle Overlap", v: inferenceResult ? "N/A" : (report.safety.obstacle_overlap_pct * 100).toFixed(1) + "%" },
                     ].map((r) => (
                       <div key={r.l} className="flex items-center justify-between">

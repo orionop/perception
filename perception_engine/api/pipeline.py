@@ -193,64 +193,57 @@ def run_pipeline(
         cv2.imwrite(str(costmap_path), vis)
         result["costmap"] = _read_file_as_base64(costmap_path)
 
-        # 7. Path planning using A* to strictly trace the landscape centerline
-        # Convert landscape class (8) to a binary mask, run Distance Transform
-        landscape_mask = (pred_mask == 8).astype(np.uint8)
-        dist = cv2.distanceTransform(landscape_mask, cv2.DIST_L2, 5)
+        # 7. Drivable Free-Space Corridor Visualization
+        # Treat landscape(8), dry_grass(2), and ground_clutter(4) as traversable
+        traversable_mask = np.isin(pred_mask, [2, 4, 8]).astype(np.uint8)
         
-        # We want the highest distance from edge to have the LOWEST cost
-        max_d = dist.max()
-        if max_d > 0:
-            norm_dist = 1.0 - (dist / max_d) # Center = 0.0, Edge = 1.0
+        # We only want the contiguous block of traversable space connected to the bottom of the image (the vehicle)
+        num_labels, labels = cv2.connectedComponents(traversable_mask)
+        
+        # Analyze the bottom 50 pixels (where the robot's front bumper is)
+        bottom_strip = labels[orig_h - 50:orig_h, :]
+        connected_labels = np.unique(bottom_strip)
+        connected_labels = connected_labels[connected_labels > 0] # ignore background (0)
+        
+        if len(connected_labels) > 0:
+            # Find the largest connected component touching the bottom
+            largest_label = None
+            max_pixels = -1
+            for label in connected_labels:
+                pixel_count = np.sum(labels == label)
+                if pixel_count > max_pixels:
+                    max_pixels = pixel_count
+                    largest_label = label
+                    
+            free_space_mask = (labels == largest_label).astype(np.uint8)
         else:
-            norm_dist = np.zeros_like(dist)
-            
-        # Force the path to stay inside the landscape by heavily penalizing everything else
-        planner_cost_map = np.full_like(pred_mask, fill_value=5000.0, dtype=np.float32)
-        planner_cost_map[landscape_mask == 1] = 1.0 + (norm_dist[landscape_mask == 1] * 100.0)
+            # Fallback if no safe space is connected to the vehicle
+            free_space_mask = np.zeros_like(traversable_mask)
 
-        from perception_engine.navigation.planner import AStarPlanner
-        planner = AStarPlanner(allow_diagonal=True)
-
-        # Start point: lowest cost in the bottom region (preferring center of landscape)
-        bottom_region = planner_cost_map[orig_h - 40:orig_h - 10, :].copy()
-        top_region = planner_cost_map[20:60, :].copy()
-        
-        center_c = orig_w // 2
-        for c in range(orig_w):
-            penalty = abs(c - center_c) * 0.1
-            bottom_region[:, c] += penalty
-            top_region[:, c] += penalty
-            
-        sr, sc = np.unravel_index(np.argmin(bottom_region), bottom_region.shape)
-        start = (int(orig_h - 40 + sr), int(sc))
-        
-        gr, gc = np.unravel_index(np.argmin(top_region), top_region.shape)
-        goal = (int(20 + gr), int(gc))
-
-        # Use the segmentation overlay as the base for path drawing
+        # Draw the Free-Space Corridor Overlay
         if overlay_path.exists():
             path_overlay = cv2.imread(str(overlay_path))
         else:
             path_overlay = image_bgr.copy()
-
-        try:
-            nav_result = planner.plan(planner_cost_map, start, goal)
-            result["path_found"] = nav_result.path_found
-            result["path_cost"] = float(nav_result.path_cost) if np.isfinite(nav_result.path_cost) else 0.0
-            result["path_length"] = len(nav_result.path) if nav_result.path else 0
-            if nav_result.path and len(nav_result.path) > 1:
-                pts = np.array([(c, r) for r, c in nav_result.path], dtype=np.int32)
-                # Draw path with thick green line + thin white center for visibility
-                cv2.polylines(path_overlay, [pts], isClosed=False, color=(0, 0, 0), thickness=5)
-                cv2.polylines(path_overlay, [pts], isClosed=False, color=(0, 255, 0), thickness=3)
-                # Draw start/goal markers
-                cv2.circle(path_overlay, (start[1], start[0]), 10, (0, 255, 0), -1)
-                cv2.circle(path_overlay, (start[1], start[0]), 12, (255, 255, 255), 2)
-                cv2.circle(path_overlay, (goal[1], goal[0]), 10, (0, 0, 255), -1)
-                cv2.circle(path_overlay, (goal[1], goal[0]), 12, (255, 255, 255), 2)
-        except Exception as path_err:
-            logger.warning("Path planning failed: %s", path_err)
+            
+        # Create a darkened version of the image
+        darkened = cv2.addWeighted(path_overlay, 0.4, np.zeros_like(path_overlay), 0.6, 0)
+        
+        # Copy exactly the free-space corridor pixels from the brightly colored overlay onto the dark background
+        path_overlay = np.where(free_space_mask[:, :, None] == 1, path_overlay, darkened)
+        
+        # Draw a sleek neon border highlighting the precise edge of the safe zone
+        contours, _ = cv2.findContours(free_space_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(path_overlay, contours, -1, (0, 0, 0), 8)        # Outer black shadow
+        cv2.drawContours(path_overlay, contours, -1, (0, 255, 128), 4)    # Inner neon green line
+        
+        paths_found = len(contours) > 0
+        total_cost = 0.0 # N/A for corridor
+        total_length = np.sum(free_space_mask) # Return total safe pixels instead of path length
+        
+        result["path_found"] = bool(paths_found)
+        result["path_cost"] = 0.0
+        result["path_length"] = int(total_length)
 
         path_path = output_dir / f"path_{img_basename}.png"
         cv2.imwrite(str(path_path), path_overlay)
