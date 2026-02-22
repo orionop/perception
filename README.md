@@ -280,7 +280,7 @@ The Perception Lab runs the **exact same** `infer_ensemble.py` CLI as a subproce
 
 ## 📄 License
 
-This project was developed for the Duality AI Hackathon.
+This project was developed for the SPIT Hackathon.
 
 ---
 
