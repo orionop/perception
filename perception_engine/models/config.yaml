@@ -1,0 +1,26 @@
+class_mapping:
+  0: Tree
+  1: Lush Bush
+  2: Dry Grass
+  3: Dry Bush
+  4: Ground Clutter
+  5: Flower
+  6: Log
+  7: Rock
+  8: Landscape
+  9: Sky
+encoder: resnet34
+input_size:
+- 288
+- 512
+model_name: DeepLabV3Plus
+normalization:
+  mean:
+  - 0.485
+  - 0.456
+  - 0.406
+  std:
+  - 0.229
+  - 0.224
+  - 0.225
+num_classes: 10

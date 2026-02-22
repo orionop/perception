@@ -1,0 +1,208 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.09 0.01 250);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.12 0.01 250);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0.01 250);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.79 0.17 75);
+  --primary-foreground: oklch(0.10 0.01 250);
+  --secondary: oklch(0.16 0.01 250);
+  --secondary-foreground: oklch(0.90 0 0);
+  --muted: oklch(0.16 0.01 250);
+  --muted-foreground: oklch(0.55 0.01 250);
+  --accent: oklch(0.72 0.15 195);
+  --accent-foreground: oklch(0.10 0.01 250);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.20 0.01 250);
+  --input: oklch(0.14 0.01 250);
+  --ring: oklch(0.79 0.17 75);
+  --chart-1: oklch(0.79 0.17 75);
+  --chart-2: oklch(0.72 0.15 195);
+  --chart-3: oklch(0.70 0.17 163);
+  --chart-4: oklch(0.65 0.24 305);
+  --chart-5: oklch(0.65 0.24 16);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.07 0.01 250);
+  --sidebar-foreground: oklch(0.90 0 0);
+  --sidebar-primary: oklch(0.79 0.17 75);
+  --sidebar-primary-foreground: oklch(0.10 0.01 250);
+  --sidebar-accent: oklch(0.13 0.01 250);
+  --sidebar-accent-foreground: oklch(0.90 0 0);
+  --sidebar-border: oklch(0.18 0.01 250);
+  --sidebar-ring: oklch(0.79 0.17 75);
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* HUD Panel - replaces glass-card */
+.hud-panel {
+  background: oklch(0.11 0.01 250);
+  border: 1px solid oklch(0.22 0.01 250);
+}
+.hud-panel:hover {
+  border-color: oklch(0.30 0.02 250);
+}
+
+/* Keep glass-card as alias for gradual migration */
+.glass-card {
+  background: oklch(0.11 0.01 250);
+  border: 1px solid oklch(0.22 0.01 250);
+}
+.glass-card:hover {
+  border-color: oklch(0.30 0.02 250);
+}
+
+/* Status indicator dots */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot-green {
+  background: #10B981;
+  box-shadow: 0 0 6px #10B981;
+}
+.status-dot-amber {
+  background: #F59E0B;
+  box-shadow: 0 0 6px #F59E0B;
+}
+.status-dot-red {
+  background: #EF4444;
+  box-shadow: 0 0 6px #EF4444;
+}
+.status-dot-cyan {
+  background: #06B6D4;
+  box-shadow: 0 0 6px #06B6D4;
+}
+
+/* Telemetry value styling */
+.telemetry-value {
+  font-family: var(--font-mono);
+  color: #F59E0B;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Telemetry label */
+.telemetry-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: oklch(0.50 0.01 250);
+}
+
+/* Grid overlay pattern for panels */
+.grid-overlay {
+  background-image:
+    linear-gradient(oklch(0.18 0.01 250) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.18 0.01 250) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Scanline effect for live terrain views */
+.scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    oklch(0.20 0.01 250 / 0.03) 2px,
+    oklch(0.20 0.01 250 / 0.03) 4px
+  );
+}
+
+/* Subtle glow for active elements */
+.glow-amber {
+  box-shadow: 0 0 12px oklch(0.79 0.17 75 / 0.2);
+}
+.glow-cyan {
+  box-shadow: 0 0 12px oklch(0.72 0.15 195 / 0.2);
+}
+.glow-green {
+  box-shadow: 0 0 12px oklch(0.70 0.17 163 / 0.2);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(0.09 0.01 250);
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.25 0.01 250);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.35 0.01 250);
+}
+
+/* Terrain canvas container */
+.terrain-container {
+  position: relative;
+  overflow: hidden;
+}
+.terrain-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

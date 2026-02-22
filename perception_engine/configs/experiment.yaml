@@ -1,0 +1,144 @@
+# =============================================================================
+# Perception Evaluation Engine — Example Experiment Configuration
+# =============================================================================
+#
+# This YAML file drives the entire evaluation pipeline.
+# All class IDs, costs, perturbations, and planner settings are
+# configured here — no hardcoding in source code.
+#
+# Dataset: Kaggle synthetic desert (960×540, 10 classes)
+# Raw mask pixel values: 100, 200, 300, 500, 550, 600, 700, 800, 7100, 10000
+# =============================================================================
+
+# ---- Device ----
+# Options: auto | cpu | cuda | mps
+# "auto" detects CUDA → MPS → CPU in order.
+device: auto
+
+# ---- Models to benchmark ----
+models:
+  - name: deeplabv3plus_v3
+    architecture: deeplabv3plus
+    backbone: resnet50
+    num_classes: 10
+    encoder_weights: imagenet
+    weights: best_model_v3.pth
+
+# ---- Semantic class names ----
+# Ordered by contiguous model output index (0–9).
+# Mapped from raw mask values via mask_value_mapping below.
+class_names:
+  - tree              # 0  (raw: 100)  — 3.5% of pixels
+  - lush_bush         # 1  (raw: 200)  — 5.9%
+  - dry_grass         # 2  (raw: 300)  — 18.9%
+  - dry_bush          # 3  (raw: 500)  — 1.1%
+  - ground_clutter    # 4  (raw: 550)  — 4.4%
+  - flower            # 5  (raw: 600)  — 2.8%
+  - log               # 6  (raw: 700)  — 0.08% (rarest)
+  - rock              # 7  (raw: 800)  — 1.2%
+  - landscape         # 8  (raw: 7100) — 24.5%
+  - sky               # 9  (raw: 10000)— 37.6% (most common)
+
+# ---- Mask value remapping ----
+# Maps raw dataset mask pixel values to contiguous model output indices.
+# Required when GT masks use non-contiguous class IDs.
+mask_value_mapping:
+  100:   0    # Tree
+  200:   1    # Lush Bush
+  300:   2    # Dry Grass
+  500:   3    # Dry Bush
+  550:   4    # Ground Clutter
+  600:   5    # Flower
+  700:   6    # Log
+  800:   7    # Rock
+  7100:  8    # Landscape
+  10000: 9    # Sky
+
+# ---- Cost mapping ----
+# Groups CONTIGUOUS model class indices by traversability category.
+#
+# UGV navigation logic:
+#   traversable — flat open terrain the UGV can drive on freely
+#   obstacle    — solid objects that block the path completely
+#   soft        — vegetation/clutter the UGV can push through at a cost
+#   ignored     — sky (not ground-level, irrelevant for navigation)
+cost_mapping:
+  traversable: [8, 2, 4, 5]   # Landscape, Dry Grass, Ground Clutter, Flower
+  obstacle:    [0, 7, 6]       # Tree, Rock, Log
+  soft:        [1, 3]           # Lush Bush, Dry Bush
+  ignored:     [9]              # Sky — not a ground surface
+
+# ---- Cost values per category ----
+cost_values:
+  traversable: 1.0
+  obstacle: .inf              # Impassable
+  soft: 2.0                   # Passable with mild cost (bushes, clutter)
+  ignored: .inf               # Not navigable terrain
+
+# ---- Preprocessing ----
+# Original dataset resolution: 960×540.
+# Resize to a power-of-2 friendly size for efficient inference.
+preprocessing:
+  target_size: [288, 512]
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std:  [0.229, 0.224, 0.225]
+
+# ---- Path planner settings ----
+# strategy: astar | potential_field | rrt_star
+planner:
+  strategy: astar
+  allow_diagonal: false
+  start: null                 # null = bottom-left corner (ground level)
+  goal: null                  # null = bottom-right corner
+  potential_field:
+    attractive_gain: 1.0
+    repulsive_gain: 100.0
+    repulsive_range: 10
+    max_iterations: 5000
+  rrt_star:
+    max_iterations: 5000
+    step_size: 5
+    goal_bias: 0.1
+    rewire_radius: 15
+
+# ---- Safety score weights ----
+# score = 1.0 - w_obs*(overlap/100) - w_conf*(1-conf) - w_cost*(cost/max)
+safety:
+  weight_obstacle: 0.4
+  weight_confidence: 0.3
+  weight_cost: 0.3
+  max_acceptable_cost: 1000.0
+
+# ---- Robustness evaluation ----
+robustness:
+  enabled: true
+  perturbations:
+    - brightness
+    - blur
+    - noise
+    - contrast
+  # Custom perturbation severity (overrides defaults).
+  params:
+    brightness:
+      factor: 1.4
+    blur:
+      radius: 3
+    noise:
+      std: 25.0
+    contrast:
+      factor: 0.5
+
+# ---- Dataset paths (for batch mode) ----
+# Used when running with --batch flag.
+dataset:
+  image_dir: perception_engine/Offroad_Segmentation_testImages/Color_Images
+  gt_dir: perception_engine/Offroad_Segmentation_testImages/Segmentation
+  image_ext: .png
+  gt_ext: .png
+  max_samples: null              # null = all, or int for quick runs
+
+# ---- Output settings ----
+output:
+  save_visualizations: true
+  output_dir: outputs

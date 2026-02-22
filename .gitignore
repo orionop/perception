@@ -1,0 +1,60 @@
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.so
+
+# ─── Model Weights (too large for git) ───
+*.pth
+*.pt
+*.onnx
+*.zip
+best_model_v6/
+
+# ─── Pickled Priors / Histograms ───
+*.pkl
+
+# ─── Outputs & Inference Results ───
+outputs/
+perception_engine/v5_predictions/
+
+# ─── Large Data (1.1GB test images — not for git) ───
+perception_engine/Offroad_Segmentation_testImages/
+data_intelligence/
+perception_engine/best_model.pth
+
+# ─── Environment & IDE ───
+.venv/
+venv/
+env/
+.env
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+
+# ─── Node / UI ───
+ui/node_modules/
+ui/.next/
+ui/out/
+ui/.turbo/
+
+# ─── Misc ───
+*.log
+*.swp
+*.swo
+*~
+.gemini/
+ewfe.png
+config_v2.yaml
+config_v3.yaml
+config_v5.yaml
+config_v6.yaml

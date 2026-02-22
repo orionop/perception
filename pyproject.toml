@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "perception-engine"
+version = "1.0.0"
+description = "Perception Evaluation Engine — Benchmark segmentation models for autonomous UGV navigation"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Perception Engine Team"},
+]
+keywords = ["segmentation", "evaluation", "robotics", "ugv", "autonomous-navigation"]
+
+dependencies = [
+    "numpy>=1.21",
+    "torch>=1.12",
+    "torchvision>=0.13",
+    "Pillow>=9.0",
+    "PyYAML>=6.0",
+    "matplotlib>=3.5",
+    "opencv-python>=4.5",
+    "segmentation-models-pytorch>=0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+api = [
+    "fastapi>=0.100",
+    "uvicorn[standard]>=0.22",
+    "python-multipart>=0.0.6",
+]
+
+[project.scripts]
+perception-engine = "perception_engine.run_experiment:main"
+
+[tool.setuptools.packages.find]
+include = ["perception_engine*"]
+
+[tool.pytest.ini_options]
+testpaths = ["perception_engine/tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
