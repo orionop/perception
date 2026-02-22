@@ -197,9 +197,21 @@ def run_pipeline(
         from perception_engine.navigation.planner import AStarPlanner
         planner = AStarPlanner(allow_diagonal=True)
 
-        # Start from bottom-center, goal at top-center (traverse the scene)
-        start = (orig_h - 20, orig_w // 2)
-        goal = (50, orig_w // 2)
+        # Start point: lowest cost in the bottom region (preferring center)
+        bottom_region = cost_map[orig_h - 40:orig_h - 10, :].astype(np.float32).copy()
+        top_region = cost_map[20:60, :].astype(np.float32).copy()
+        
+        center_c = orig_w // 2
+        for c in range(orig_w):
+            penalty = abs(c - center_c) * 0.001
+            bottom_region[:, c] += penalty
+            top_region[:, c] += penalty
+            
+        sr, sc = np.unravel_index(np.argmin(bottom_region), bottom_region.shape)
+        start = (int(orig_h - 40 + sr), int(sc))
+        
+        gr, gc = np.unravel_index(np.argmin(top_region), top_region.shape)
+        goal = (int(20 + gr), int(gc))
 
         # Use the segmentation overlay as the base for path drawing
         if overlay_path.exists():
