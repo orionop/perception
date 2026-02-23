@@ -1,6 +1,6 @@
 # 🏜️ Perception Engine — Offroad Semantic Segmentation
 
-> **Duality AI Hackathon Submission** — Autonomous UGV terrain analysis using DINOv2 + 4D Bayesian Fusion
+> **SPIT Hackathon Submission** — Autonomous UGV terrain analysis using DINOv2 + 4D Bayesian Fusion
 
 <p align="center">
   <img src="https://img.shields.io/badge/mIoU-61%25-brightgreen?style=for-the-badge" alt="mIoU">
@@ -449,10 +449,13 @@ pytest perception_engine/tests/ -v --ignore=perception_engine/tests/test_end_to_
 
 ## 📄 License
 
-This project was developed for the Duality AI Hackathon. MIT License.
+This project was developed for the SPIT Hackathon. MIT License.
 
 ---
 
 ## 👥 Team
 
-Developed as part of the perception challenge for autonomous UGV terrain analysis.
+Team Members
+Anurag Shetye
+Yash Patil
+Arya Bhagwat
